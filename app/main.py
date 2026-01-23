@@ -1,12 +1,15 @@
 
 from app.models import UserModel, User
 from app.schema import UserModelSQL, Base
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, UploadFile
 from app.db import SessionLocal 
 from app.dependency import get_deb
 from sqlalchemy.orm import Session 
 from app.db import engine
 from fastapi.middleware.cors import CORSMiddleware
+from app.utils.indexer import get_embedd, index_doc
+from app.utils.retriver import retriver
+from app.utils.llm import generate_ans
 
 app = FastAPI()
 app.add_middleware(
@@ -83,4 +86,29 @@ def delete_user(id: int, db: Session = Depends(get_deb)):
         return "delete done"
     else:
         return "not found"
+    
+@app.post("/upload")
+async def upload_doc(file: UploadFile):
+    text = (await file.read()).decode("utf-8")
+    index_doc(text)
+    return {
+        "status": "success"
+    }
+
+@app.get("/retrive")
+def get_doc(query: str):
+    docs = retriver(query)
+    return {
+        "doc": docs
+    }
+
+
+@app.get("/chat")
+def get_doc(query: str):
+    docs = retriver(query)
+    context = "\n".join(docs)
+    answer = generate_ans(context, query)
+    return {
+        "answer": answer
+    }
 

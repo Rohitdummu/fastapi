@@ -7,3 +7,7 @@ psycopg2-binary
 PyMySQL
 cryptography
 python-dotenv
+AzureOpenAI
+openai
+azure-search-documents
+python-multipart
